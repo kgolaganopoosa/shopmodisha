@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shop MODISHA - Express Ordering Portal</title>
+    
+    <!-- PWA & Mobile Web App Meta Tags -->
+    <meta name="theme-color" content="#059669">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Shop MODISHA">
+    <meta name="description" content="Shop MODISHA Express WhatsApp Ordering Portal and Local Delivery Service.">
+
+    <!-- Web App Manifest (Data URI) -->
+    <link rel="manifest" id="manifestLink">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .modal-backdrop {
+            background-color: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(4px);
+        }
+        /* Touch highlight improvements for mobile PWA */
+        button, a, input, label {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased text-slate-800 flex flex-col min-h-screen bg-slate-50 select-none sm:select-auto">
+
+    <!-- Custom PWA Install Banner (Appears when install prompt is available) -->
+    <div id="pwaInstallBanner" class="hidden bg-slate-900 text-white px-4 py-3 border-b border-slate-800 transition-all duration-300">
+        <div class="max-w-4xl mx-auto flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center font-bold text-white shadow-md text-lg shrink-0">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm leading-tight text-white">Install Shop MODISHA App</h4>
+                    <p class="text-xs text-slate-300">Add to Home Screen for fast offline order drafting!</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <button onclick="dismissInstallBanner()" class="text-xs text-slate-400 hover:text-white px-2 py-1.5">Later</button>
+                <button onclick="triggerPwaInstall()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3.5 py-1.5 rounded-lg shadow-sm flex items-center gap-1.5">
+                    <i class="fa-solid fa-download"></i> Install
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Offline Status Bar -->
+    <div id="offlineBar" class="hidden bg-amber-500 text-slate-900 text-xs py-1.5 px-4 text-center font-bold flex items-center justify-center gap-2 shadow-inner">
+        <i class="fa-solid fa-wifi"></i> You are currently offline. Orders will be prepared and sent once reconnecting to WhatsApp!
+    </div>
+
+    <!-- Top Delivery Announcement Bar -->
+    <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white text-sm py-2.5 px-4 text-center shadow-sm font-medium flex items-center justify-center gap-2">
+        <i class="fa-solid fa-truck-fast text-emerald-200 text-base animate-pulse"></i>
+        <span>Standard Delivery Fee: <strong class="underline decoration-emerald-300 underline-offset-2 text-white">R5</strong> — Fast & Local Delivery Guaranteed!</span>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+                    <i class="fa-solid fa-bag-shopping text-xl"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-extrabold tracking-tight text-slate-900">Shop <span class="text-emerald-600">MODISHA</span></span>
+                    <span class="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Express Ordering Portal</span>
+                </div>
+            </div>
+
+            <!-- Install Button & WhatsApp Info -->
+            <div class="flex items-center gap-3">
+                <button id="headerInstallBtn" onclick="triggerPwaInstall()" class="hidden sm:flex items-center gap-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-3.5 py-2 rounded-xl shadow-sm transition">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Install App</span>
+                </button>
+                <div class="flex items-center gap-1.5 text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200">
+                    <i class="fa-brands fa-whatsapp text-emerald-500 text-base"></i>
+                    <span class="hidden xs:inline">Direct Order</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-4xl w-full mx-auto px-4 py-8 sm:py-12">
+        
+        <!-- Hero Title Section -->
+        <div class="text-center mb-8 sm:mb-10">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 mb-3">
+                <i class="fa-solid fa-bolt text-emerald-500"></i> Fast & Easy PWA Checkout
+            </span>
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                Submit Your Order Details
+            </h1>
+            <p class="mt-2 text-sm sm:text-base text-slate-600 max-w-lg mx-auto">
+                Fill in your list below. Your order request will automatically format into a ready-to-send WhatsApp message to process instantly.
+            </p>
+        </div>
+
+        <!-- Main Form Card -->
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-200/80 overflow-hidden">
+            <div class="p-6 sm:p-10">
+                
+                <form id="orderForm" onsubmit="handleOrderSubmit(event)" class="space-y-6">
+                    
+                    <!-- 1. Full Name -->
+                    <div>
+                        <label for="fullName" class="block text-sm font-bold text-slate-700 mb-1.5">
+                            Full Name <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative rounded-xl shadow-xs">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                <i class="fa-regular fa-user"></i>
+                            </div>
+                            <input 
+                                type="text" 
+                                id="fullName" 
+                                required 
+                                placeholder="e.g. Thabo Mokoena"
+                                class="block w-full pl-10 pr-4 py-3 bg-slate-50/50 text-slate-900 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm transition"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- 2. Products List -->
+                    <div>
+                        <label for="productsList" class="block text-sm font-bold text-slate-700 mb-1.5">
+                            List of Products You're Shopping <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative rounded-xl shadow-xs">
+                            <textarea 
+                                id="productsList" 
+                                required 
+                                rows="4" 
+                                placeholder="List your items here (e.g.&#10;1. Brown Bread x2&#10;2. 2L Full Cream Milk&#10;3. 1kg Sugar)"
+                                class="block w-full p-3.5 bg-slate-50/50 text-slate-900 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm transition"
+                            ></textarea>
+                        </div>
+                        <p class="mt-1.5 text-xs text-slate-500">Please specify quantities where possible.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                        <!-- 3. Cash Amount Available -->
+                        <div>
+                            <label for="cashAmount" class="block text-sm font-bold text-slate-700 mb-1.5">
+                                Amount of Cash You Have <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative rounded-xl shadow-xs">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-700 font-bold text-base">
+                                    R
+                                </div>
+                                <input 
+                                    type="number" 
+                                    id="cashAmount" 
+                                    min="0" 
+                                    step="1" 
+                                    required 
+                                    placeholder="200"
+                                    class="block w-full pl-10 pr-4 py-3 bg-slate-50/50 text-slate-900 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm transition"
+                                />
+                            </div>
+                            <p class="mt-1.5 text-xs text-slate-500">Helps us calculate change or verify budget.</p>
+                        </div>
+
+                        <!-- 4. Payment Method -->
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                                Payment Method <span class="text-red-500">*</span>
+                            </label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="relative flex items-center justify-center p-3 border border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition has-[:checked]:bg-emerald-50 has-[:checked]:border-emerald-600 has-[:checked]:text-emerald-900">
+                                    <input type="radio" name="paymentMethod" value="Cash" required class="sr-only peer" checked>
+                                    <div class="flex items-center space-x-2 text-sm font-medium text-slate-700 peer-checked:text-emerald-800">
+                                        <i class="fa-solid fa-money-bill-wave text-emerald-600"></i>
+                                        <span>Cash</span>
+                                    </div>
+                                    <div class="absolute -top-1 -right-1 hidden peer-checked:block w-4 h-4 bg-emerald-600 rounded-full border-2 border-white"></div>
+                                </label>
+
+                                <label class="relative flex items-center justify-center p-3 border border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition has-[:checked]:bg-emerald-50 has-[:checked]:border-emerald-600 has-[:checked]:text-emerald-900">
+                                    <input type="radio" name="paymentMethod" value="Card" required class="sr-only peer">
+                                    <div class="flex items-center space-x-2 text-sm font-medium text-slate-700 peer-checked:text-emerald-800">
+                                        <i class="fa-solid fa-credit-card text-emerald-600"></i>
+                                        <span>Card</span>
+                                    </div>
+                                    <div class="absolute -top-1 -right-1 hidden peer-checked:block w-4 h-4 bg-emerald-600 rounded-full border-2 border-white"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Delivery Summary Notice -->
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 flex items-start gap-3 text-xs text-slate-600">
+                        <i class="fa-solid fa-circle-info text-emerald-600 text-base mt-0.5 flex-shrink-0"></i>
+                        <div>
+                            <span class="font-bold text-slate-800">Order Summary Note:</span> Standard delivery fee of <strong class="text-emerald-700 font-bold">R5</strong> will be appended to your order summary upon sending via WhatsApp.
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="pt-2">
+                        <button 
+                            type="submit" 
+                            class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/40 transition-all duration-200 flex items-center justify-center gap-3 text-base cursor-pointer"
+                        >
+                            <i class="fa-brands fa-whatsapp text-2xl"></i>
+                            <span>Send Order via WhatsApp</span>
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-auto py-8 text-center text-xs text-slate-500">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="flex items-center justify-center space-x-2 mb-4">
+                <div class="w-6 h-6 rounded-md bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">M</div>
+                <span class="font-bold text-slate-700 text-sm">Shop MODISHA</span>
+            </div>
+            
+            <p class="mb-4">Delivering quality products directly to your doorstep with minimal service fees.</p>
+            
+            <!-- Modal Triggers -->
+            <div class="flex flex-wrap justify-center gap-4 sm:gap-6 text-emerald-600 font-medium mb-6">
+                <button type="button" onclick="openModal('privacyModal')" class="hover:underline hover:text-emerald-800 transition">Privacy Policy</button>
+                <span class="text-slate-300">•</span>
+                <button type="button" onclick="openModal('termsUseModal')" class="hover:underline hover:text-emerald-800 transition">Terms of Use</button>
+                <span class="text-slate-300">•</span>
+                <button type="button" onclick="openModal('termsCondModal')" class="hover:underline hover:text-emerald-800 transition">Terms & Conditions</button>
+            </div>
+
+            <p class="text-slate-400">&copy; <span id="yearSpan"></span> Shop MODISHA. All rights reserved. Express Checkout Portal.</p>
+        </div>
+    </footer>
+
+    <!-- 1. PRIVACY POLICY MODAL -->
+    <div id="privacyModal" class="fixed inset-0 z-50 hidden overflow-y-auto modal-backdrop flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-100 transform transition-all">
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50 rounded-t-2xl">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-user-shield text-emerald-600"></i> Privacy Policy
+                </h3>
+                <button onclick="closeModal('privacyModal')" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/60 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto text-sm text-slate-600 space-y-4 leading-relaxed">
+                <p>At <strong>Shop MODISHA</strong>, accessible through our express PWA web portal, we are committed to maintaining the trust and confidence of our customers. This Privacy Policy outlines how your personal information is handled.</p>
+
+                <h4 class="font-bold text-slate-800 text-base">1. Information We Collect</h4>
+                <p>When placing an order using our web form, we require specific details necessary for completing your transaction, including your Full Name, list of shopping items, budget/cash amount, and preferred payment method.</p>
+
+                <h4 class="font-bold text-slate-800 text-base">2. How Your Information Is Processed</h4>
+                <p>Your input data is formatted directly on your device into a pre-structured message sent straight to our WhatsApp business line (0824598656). We do not store your private submission data on external databases or sell your information to third-party advertisers.</p>
+
+                <h4 class="font-bold text-slate-800 text-base">3. Communication</h4>
+                <p>We only use your provided contact information (WhatsApp number and provided name) to confirm order fulfillment, total prices, and schedule the delivery to your location.</p>
+
+                <h4 class="font-bold text-slate-800 text-base">4. Data Security & Storage</h4>
+                <p>WhatsApp provides end-to-end encryption for chat communications. Offline form drafts are stored strictly on your local browser cache and are never shared.</p>
+            </div>
+            <div class="px-6 py-3.5 border-t border-slate-200 bg-slate-50/50 flex justify-end rounded-b-2xl">
+                <button onclick="closeModal('privacyModal')" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-4 py-2 rounded-xl transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. TERMS OF USE MODAL -->
+    <div id="termsUseModal" class="fixed inset-0 z-50 hidden overflow-y-auto modal-backdrop flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-100 transform transition-all">
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50 rounded-t-2xl">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-file-contract text-emerald-600"></i> Terms of Use
+                </h3>
+                <button onclick="closeModal('termsUseModal')" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/60 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto text-sm text-slate-600 space-y-4 leading-relaxed">
+                <p>Welcome to <strong>Shop MODISHA</strong>. By accessing and using this web application or installed PWA to place orders, you accept and agree to abide by the following terms of use.</p>
+
+                <h4 class="font-bold text-slate-800 text-base">1. Acceptable Use</h4>
+                <p>You agree to use this site exclusively for submitting legitimate order requests. Any spamming, false orders, or fraudulent automated requests are strictly prohibited.</p>
+
+                <h4 class="font-bold text-slate-800 text-base">2. Product Availability</h4>
+                <p>Submitting an order form via this site generates a request. Availability of listed items is subject to local stock. Final confirmation of order fulfillment and stock availability will be provided directly via WhatsApp chat.</p>
+
+                <h4 class="font-bold text-slate-800 text-base">3. Order Form Accuracy</h4>
+                <p>Users are responsible for ensuring that the product descriptions, quantities, and payment details provided in the form are accurate prior to launching the WhatsApp prompt.</p>
+            </div>
+            <div class="px-6 py-3.5 border-t border-slate-200 bg-slate-50/50 flex justify-end rounded-b-2xl">
+                <button onclick="closeModal('termsUseModal')" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-4 py-2 rounded-xl transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. TERMS & CONDITIONS MODAL -->
+    <div id="termsCondModal" class="fixed inset-0 z-50 hidden overflow-y-auto modal-backdrop flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-100 transform transition-all">
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50 rounded-t-2xl">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-scale-balanced text-emerald-600"></i> Terms & Conditions
+                </h3>
+                <button onclick="closeModal('termsCondModal')" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/60 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto text-sm text-slate-600 space-y-4 leading-relaxed">
+                <p>These Terms & Conditions govern all sales and delivery services provided by <strong>Shop MODISHA</strong>.</p>
+
+                <h4 class="font-bold text-slate-800 text-base">1. Delivery Fee Policy</h4>
+                <p>A standard delivery fee of <strong>R5</strong> applies to all dispatched orders. This fee is automatically noted on your WhatsApp order breakdown and will be added to the final order invoice upon fulfillment.</p>
+
+                <h4 class="font-bold text-slate-800 text-base">2. Payment Methods</h4>
+                <p>We accept Cash and Card payments upon delivery or pickup. If Cash is selected, please ensure you have sufficient physical tender as specified in your form submission.</p>
+
+                <h4 class="font-bold text-slate-800 text-base">3. Order Cancellations & Alterations</h4>
+                <p>Orders can be modified or cancelled directly via the WhatsApp conversation prior to the dispatch of our delivery representative.</p>
+
+                <h4 class="font-bold text-slate-800 text-base">4. Contact Information</h4>
+                <p>For inquiries, support, or direct communication, our customer helpline is reachable at WhatsApp: <strong>0824598656</strong>.</p>
+            </div>
+            <div class="px-6 py-3.5 border-t border-slate-200 bg-slate-50/50 flex justify-end rounded-b-2xl">
+                <button onclick="closeModal('termsCondModal')" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-4 py-2 rounded-xl transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set dynamic current year
+        document.getElementById('yearSpan').textContent = new Date().getFullYear();
+
+        /* ==========================================================================
+           1. PWA Dynamic Manifest & SVG Icon Setup
+           ========================================================================== */
+        function generatePwaIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Draw Background
+            ctx.fillStyle = '#059669';
+            ctx.fillRect(0, 0, size, size);
+
+            // Draw Icon Bag Shape
+            ctx.fillStyle = '#ffffff';
+            const pad = size * 0.25;
+            const w = size - (pad * 2);
+            const h = size - (pad * 2);
+            ctx.beginPath();
+            ctx.roundRect ? ctx.roundRect(pad, pad + 10, w, h - 10, 20) : ctx.rect(pad, pad + 10, w, h - 10);
+            ctx.fill();
+
+            // Draw "M" inside
+            ctx.fillStyle = '#059669';
+            ctx.font = `bold ${Math.floor(size * 0.35)}px Inter, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('M', size / 2, size / 2 + 5);
+
+            return canvas.toDataURL('image/png');
+        }
+
+        const icon192 = generatePwaIcon(192);
+        const icon512 = generatePwaIcon(512);
+
+        // Add Apple Touch Icon dynamically
+        const appleIconLink = document.createElement('link');
+        appleIconLink.rel = 'apple-touch-icon';
+        appleIconLink.href = icon192;
+        document.head.appendChild(appleIconLink);
+
+        // Generate JSON Manifest as Blob Data URL
+        const manifestObj = {
+            name: "Shop MODISHA",
+            short_name: "MODISHA",
+            description: "Shop MODISHA Express WhatsApp Ordering Portal",
+            start_url: window.location.href,
+            display: "standalone",
+            orientation: "portrait",
+            background_color: "#f8fafc",
+            theme_color: "#059669",
+            icons: [
+                { src: icon192, sizes: "192x192", type: "image/png" },
+                { src: icon512, sizes: "512x512", type: "image/png" }
+            ]
+        };
+
+        const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/json' });
+        document.getElementById('manifestLink').href = URL.createObjectURL(manifestBlob);
+
+        /* ==========================================================================
+           2. PWA Service Worker Registration (Inline Blob SW)
+           ========================================================================== */
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                const CACHE_NAME = 'modisha-pwa-v1';
+                const ASSETS = [
+                    '${window.location.href}',
+                    'https://cdn.tailwindcss.com',
+                    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+                    'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap'
+                ];
+
+                self.addEventListener('install', (e) => {
+                    e.waitUntil(
+                        caches.open(CACHE_NAME).then((cache) => {
+                            return cache.addAll(ASSETS).catch(() => {});
+                        })
+                    );
+                    self.skipWaiting();
+                });
+
+                self.addEventListener('activate', (e) => {
+                    e.waitUntil(
+                        caches.keys().then((keys) => {
+                            return Promise.all(
+                                keys.map((key) => {
+                                    if (key !== CACHE_NAME) return caches.delete(key);
+                                })
+                            );
+                        })
+                    );
+                    self.clients.claim();
+                });
+
+                self.addEventListener('fetch', (e) => {
+                    e.respondWith(
+                        caches.match(e.request).then((cachedResponse) => {
+                            if (cachedResponse) return cachedResponse;
+                            return fetch(e.request).catch(() => {
+                                if (e.request.mode === 'navigate') {
+                                    return caches.match('${window.location.href}');
+                                }
+                            });
+                        })
+                    );
+                });
+            `;
+
+            const swBlob = new Blob([swCode], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(swBlob);
+
+            navigator.serviceWorker.register(swUrl)
+                .then(() => console.log('Shop MODISHA Service Worker registered!'))
+                .catch(err => console.error('SW Registration failed:', err));
+        }
+
+        /* ==========================================================================
+           3. PWA Installation Handler
+           ========================================================================== */
+        let deferredPrompt = null;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show custom banners
+            document.getElementById('pwaInstallBanner').classList.remove('hidden');
+            const headerBtn = document.getElementById('headerInstallBtn');
+            if (headerBtn) headerBtn.classList.remove('hidden');
+        });
+
+        function triggerPwaInstall() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the MODISHA installation prompt');
+                    }
+                    deferredPrompt = null;
+                    dismissInstallBanner();
+                });
+            } else {
+                alert('App installation is ready! If not prompting automatically, use your browser menu and tap "Add to Home Screen".');
+            }
+        }
+
+        function dismissInstallBanner() {
+            document.getElementById('pwaInstallBanner').classList.add('hidden');
+        }
+
+        window.addEventListener('appinstalled', () => {
+            dismissInstallBanner();
+            const headerBtn = document.getElementById('headerInstallBtn');
+            if (headerBtn) headerBtn.classList.add('hidden');
+            console.log('Shop MODISHA App was successfully installed!');
+        });
+
+        /* ==========================================================================
+           4. Online / Offline Monitoring
+           ========================================================================== */
+        function updateNetworkStatus() {
+            const offlineBar = document.getElementById('offlineBar');
+            if (!navigator.onLine) {
+                offlineBar.classList.remove('hidden');
+            } else {
+                offlineBar.classList.add('hidden');
+            }
+        }
+
+        window.addEventListener('online', updateNetworkStatus);
+        window.addEventListener('offline', updateNetworkStatus);
+        updateNetworkStatus();
+
+        /* ==========================================================================
+           5. Form Handling & WhatsApp Integration
+           ========================================================================== */
+        function handleOrderSubmit(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('fullName').value.trim();
+            const products = document.getElementById('productsList').value.trim();
+            const cashAmount = document.getElementById('cashAmount').value.trim();
+            
+            const paymentMethodElement = document.querySelector('input[name="paymentMethod"]:checked');
+            const paymentMethod = paymentMethodElement ? paymentMethodElement.value : 'Cash';
+
+            const phone = "27824598656"; // SA Phone code format
+
+            const message = 
+`*NEW ORDER - SHOP MODISHA*
+----------------------------------
+👤 *Customer Name:* ${name}
+
+🛒 *Products Shopping List:*
+${products}
+
+💵 *Cash Available:* R${cashAmount}
+💳 *Payment Method:* ${paymentMethod}
+🚚 *Delivery Fee:* R5
+
+----------------------------------
+_Sent via Shop MODISHA PWA App_`;
+
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
+
+            window.open(whatsappUrl, '_blank');
+        }
+
+        /* ==========================================================================
+           6. Legal Modal Controls
+           ========================================================================== */
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        window.addEventListener('click', function(event) {
+            ['privacyModal', 'termsUseModal', 'termsCondModal'].forEach(id => {
+                const modal = document.getElementById(id);
+                if (event.target === modal) {
+                    closeModal(id);
+                }
+            });
+        });
+
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                ['privacyModal', 'termsUseModal', 'termsCondModal'].forEach(closeModal);
+            }
+        });
+    </script>
+</body>
+</html>
